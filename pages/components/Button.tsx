@@ -7,6 +7,7 @@ type Props = {
   disabled?: boolean;
   variant?: "primary" | "secondary";
   size?: "normal" | "small";
+  success?: boolean;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 }
 
@@ -18,6 +19,7 @@ export default function Button({ children, className, size = 'normal', variant =
     'bg-white hover:bg-gray-100 active:bg-gray-200 text-black border-gray-200': variant === 'secondary',
     'py-1 px-2 text-sm': size === 'small',
     'disabled:opacity-50 disabled:cursor-not-allowed': props.disabled,
+    'bg-green-500 text-white pointer-events-none': props.success,
   });
 
 

@@ -14,7 +14,7 @@ export default function Header() {
         <div className='items-center space-x-5'>
           <Link href="/posterity-wallet">Posterity Wallet</Link>
           <Link href="/manage-heirs">Manage heirs</Link>
-          <Link href="/">Recover wallet</Link>
+          <Link href="/recover-wallet">Recover wallet</Link>
         </div>
       ) : null}
       <ConnectWallet />

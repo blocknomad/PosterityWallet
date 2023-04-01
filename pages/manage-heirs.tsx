@@ -13,7 +13,7 @@ interface Heir {
 
 const HeirTile = ({ heir }: { heir: Heir }) => {
   return (
-    <div className='py-4 border-b border-gray-200 flex justify-between'>
+    <div className='py-4 border-b border-gray-200 last:border-0 flex justify-between'>
       <p className=''>{heir.userAddress}</p>
       <div className='flex items-center space-x-2'>
         <p className=''>{heir.percentage}%</p>
@@ -35,7 +35,6 @@ const HeirsForm = ({ heirs, onCancel }: { heirs: Heir[], onCancel: () => void })
     control, // control props comes from useForm (optional: if you are using FormContext)
     name: "heirs", // unique name for your Field Array
   });
-  console.log(heirs)
 
   return (
     <div className='w-[500px]'>
