@@ -7,7 +7,7 @@ export default function Header() {
   return (
     <header className="px-48 py-4 shadow border-gray-200 w-full flex items-center space-x-8">
       <Link href="/">
-        <Image src="/logo.png" alt="Posterity logo" width="150" height="75" />
+        <Image src="/logo.png" alt="Posterity logo" width="150" height="64" />
       </Link>
       <div className='grow' />
       {useAddress() ? (
