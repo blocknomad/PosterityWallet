@@ -10,7 +10,7 @@ type Props = {
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 }
 
-export const Button = ({ children, className, size = 'normal', variant = "primary", ...props }: Props) => {
+export default function Button({ children, className, size = 'normal', variant = "primary", ...props }: Props) {
   const baseStyles = 'py-2 px-4 rounded-md font-medium focus:outline-none transition duration-200 border border-solid text-base';
 
   const variantStyles = classNames({
