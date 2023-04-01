@@ -13,7 +13,7 @@ export default function Header() {
       {useAddress() ? (
         <div className='items-center space-x-5'>
           <Link href="/posterity-wallet">Posterity Wallet</Link>
-          <Link href="/posterity-wallet">Manage heirs</Link>
+          <Link href="/manage-heirs">Manage heirs</Link>
           <Link href="/">Recover wallet</Link>
         </div>
       ) : null}
