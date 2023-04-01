@@ -174,7 +174,11 @@ export default function PosterityWallet() {
         </>
       )
     } else {
-      return null
+      return (
+        <p className='text-base'>
+          There aren't recent transactions to show.
+        </p>
+      )
     }
   }
 
@@ -219,7 +223,6 @@ export default function PosterityWallet() {
             </div>
           </>
         )}
-
       </main>
     </>
   )
