@@ -6,12 +6,9 @@ import Header from './components/Header'
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <>
-      <ThirdwebProvider activeChain="ethereum" theme="light">
-        <Header />
-      </ThirdwebProvider>
-
+    <ThirdwebProvider activeChain="goerli" theme="light">
+      <Header />
       <Component {...pageProps} />
-    </>
+    </ThirdwebProvider>
   )
 }
