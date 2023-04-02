@@ -9,7 +9,7 @@ import PosterityWalletFactoryABI from "../abis/PosterityWalletFactory.json"
 import PosterityWalletABI from "../abis/PosterityWallet.json"
 import Spinner from './components/Spinner';
 import Input from './components/Input';
-import { CONSTANTS } from './utils/constants';
+import CONSTANTS from '../utils/constants';
 
 interface Transaction {
   to: string;
@@ -243,7 +243,7 @@ export default function PosterityWallet() {
     } else {
       return (
         <p className='text-base'>
-          You still don't have a Posterity Wallet. Click on the "Create" button above to create one.
+          You still don&apos;t have a Posterity Wallet. Click on the &quot;Create&quot; button above to create one.
         </p>
       )
     }
@@ -266,7 +266,7 @@ export default function PosterityWallet() {
     } else {
       return (
         <p className='text-base'>
-          There aren't recent transactions to show.
+          There aren&apos;t recent transactions to show.
         </p>
       )
     }

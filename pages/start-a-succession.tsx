@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSDK, useAddress } from "@thirdweb-dev/react";
 
 import Button from './components/Button'
-import { CONSTANTS } from './utils/constants';
+import CONSTANTS from '../utils/constants';
 import PosterityWalletFactoryABI from "../abis/PosterityWalletFactory.json"
 import PosterityWalletABI from "../abis/PosterityWallet.json"
 import Spinner from './components/Spinner';
@@ -97,7 +97,7 @@ export default function RecoverWallet() {
     } else {
       return (
         <p className='text-base'>
-          You still haven't been added as an heir in a Posterity Wallet.
+          You still haven&apos;t been added as an heir in a Posterity Wallet.
         </p>
       )
     }

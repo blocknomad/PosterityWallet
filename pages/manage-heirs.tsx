@@ -2,12 +2,11 @@ import Head from 'next/head'
 import { useEffect, useRef, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useSDK, useAddress } from "@thirdweb-dev/react";
-import { ethers } from 'ethers'
 
 import Button from './components/Button'
 import Input from './components/Input';
 import SvgButton from './components/SvgButton';
-import { CONSTANTS } from './utils/constants';
+import CONSTANTS from '../utils/constants';
 import PosterityWalletFactoryABI from "../abis/PosterityWalletFactory.json"
 import PosterityWalletABI from "../abis/PosterityWallet.json"
 import Spinner from './components/Spinner';
@@ -120,13 +119,11 @@ export default function Home() {
           setUserPosterityWallet(null)
           setIsLoadingHeirs(false)
         } else {
-          console.log({ posterityWalletAddress })
           setUserPosterityWallet(posterityWalletAddress)
 
           posterityWalletContract.current = await sdk?.getContract(posterityWalletAddress, PosterityWalletABI.abi)
 
           const heirs = await posterityWalletContract.current?.call("getHeirs")
-          console.log(heirs)
           setHeirs([...heirs])
         }
       }).catch(e => {
@@ -157,20 +154,20 @@ export default function Home() {
       return <HeirsForm heirs={heirs} onCancel={() => setIsModifyingHeirs(false)} handleHeirsModification={handleHeirsModification} />
     } else if (!userPosterityWallet) {
       return (
-        <p className='text-base'>
-          You still don't have a Posterity Wallet. Go to <Link href="/posterity-wallet" className='text-primary'>Posterity Wallet</Link> and click on the "Create" button to create one.
+        <p className="text-base">
+          You still don&apos;t have a Posterity Wallet. Go to <Link href="/posterity-wallet" className="text-primary">Posterity Wallet</Link> and click on the &quot;Create&quot; button to create one.
         </p>
       )
     } else if (heirs.length > 0) {
       return (
-        <div className='w-[600px]'>
+        <div className="w-[600px]">
           {heirs.sort((a, b) => b.percentage - a.percentage).map((heir) => <HeirTile key={heir.userAddress} heir={heir} />)}
         </div>
       )
     } else {
       return (
-        <p className='text-base'>
-          There aren't heirs to show. Click on the "Modify heirs" button above to add heirs.
+        <p className="text-base">
+          There aren&apos;t heirs to show. Click on the &quot;Modify heirs&quot; button above to add heirs.
         </p>
       )
     }
@@ -188,13 +185,13 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className='px-48 py-12'>
-        <div className='flex items-center space-x-5'>
-          <h1 className='text-3xl font-bold'>Manage heirs</h1>
+      <main className="px-48 py-12">
+        <div className="flex items-center space-x-5">
+          <h1 className="text-3xl font-bold">Manage heirs</h1>
           {isModifyingHeirs || !userPosterityWallet ? null :
-            <Button size='small' onClick={() => setIsModifyingHeirs(true)}>Modify heirs</Button>}
+            <Button size="small" onClick={() => setIsModifyingHeirs(true)}>Modify heirs</Button>}
         </div>
-        <div className='my-5 flex items-center'>
+        <div className="my-5 flex items-center">
           {getContent()}
         </div>
       </main>
