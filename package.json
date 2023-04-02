@@ -4,24 +4,41 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "@thirdweb-dev/react": "^3.11.4",
+    "@thirdweb-dev/sdk": "^3.10.7",
+    "@types/node": "18.15.11",
+    "@types/react": "18.0.31",
+    "@types/react-dom": "18.0.11",
+    "classnames": "^2.3.2",
+    "eslint": "8.37.0",
+    "eslint-config-next": "13.2.4",
+    "ethers": "^5.7.2",
+    "next": "13.2.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hook-form": "^7.43.9",
+    "typescript": "5.0.3"
+  },
   "devDependencies": {
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.3.1",
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",
     "@nomiclabs/hardhat-ethers": "^2.2.1",
     "@nomiclabs/hardhat-etherscan": "^3.1.2",
     "@openzeppelin/contracts": "^4.8.0",
-    "@uniswap/v2-core": "^1.0.1",
-    "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "chai": "^4.3.7",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "hardhat": "^2.12.2"
-  },
-  "dependencies": {
-    "@chainlink/contracts": "^0.6.1"
   }
 }
