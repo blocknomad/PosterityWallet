@@ -1,2 +1,2 @@
-# stakingafo
- stakingafo
+# Contracts PosterityWallet
+ PosterityWallet
