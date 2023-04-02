@@ -39,6 +39,12 @@ const PosterityWalletForm = ({ onCancel, handlePosterityWalletCreation }: { onCa
   const onSubmit = async ({ taxId }: { taxId: string }) => {
     setIsCreatingPosterityWallet(true)
 
+    if (isNaN(Number(taxId))) {
+      alert('Please inform a number as your tax ID')
+      setIsCreatingPosterityWallet(false)
+      return
+    }
+
     try {
       await handlePosterityWalletCreation(taxId)
     } catch (error) {
@@ -80,7 +86,7 @@ const PosterityWalletForm = ({ onCancel, handlePosterityWalletCreation }: { onCa
 }
 
 export default function PosterityWallet() {
-  const [isLoadingPosterityWallet, setIsLoadingPosterityWallet] = useState(false)
+  const [isLoadingPosterityWallet, setIsLoadingPosterityWallet] = useState(true)
   const [userPosterityWallet, setUserPosterityWallet] = useState<string | null>(null)
   const [userPosterityWalletBalance, setUserPosterityWalletBalance] = useState<any>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -129,20 +135,11 @@ export default function PosterityWallet() {
   }, [address])
 
   const handlePosterityWalletCreation = async (taxId: string) => {
-    try {
-      const response = await (await posterityWalletFactoryContract)?.call("deploy", [Number(taxId)])
-      const newPosterityWalletAddress = ethers.utils.getAddress(ethers.utils.hexStripZeros(response.receipt.logs[0].topics[2]))
-      setIsCreatingPosterityWallet(false)
-      setIsLoadingPosterityWallet(true)
-      setUserPosterityWallet(newPosterityWalletAddress)
-      sdk?.getProvider().getBalance(newPosterityWalletAddress).then(balance => {
-        setUserPosterityWalletBalance(balance)
-      }).finally(() => {
-        setIsLoadingPosterityWallet(false)
-      })
-    } catch (e) {
-      alert(e)
-    }
+    const response = await (await posterityWalletFactoryContract)?.call("deploy", [Number(taxId)])
+    const newPosterityWalletAddress = ethers.utils.getAddress(ethers.utils.hexStripZeros(response.receipt.logs[0].topics[2]))
+    setIsCreatingPosterityWallet(false)
+    setUserPosterityWallet(newPosterityWalletAddress)
+    setUserPosterityWalletBalance(null)
   }
 
   const getPosterityWalletContent = () => {
@@ -203,8 +200,8 @@ export default function PosterityWallet() {
             </div>
             <div className='my-5 flex items-center'>
               <p className='text-5xl font-thin'>{userPosterityWalletBalance ? ethers.utils.formatEther(userPosterityWalletBalance) : '0.0'} <span className='text-3xl'>ETH</span></p>
-              <Button size='small' className='ml-10'>Deposit</Button>
-              <Button size='small' className='ml-2'>Send</Button>
+              {/*<Button size='small' className='ml-10'>Deposit</Button>*/}
+              <Button size='small' className='ml-10'>Send</Button>
             </div>
             <hr className="my-8 border-t border-gray-200" />
             <div className='w-[700px]'>

@@ -1,7 +1,8 @@
 import Head from 'next/head'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useSDK, useAddress } from "@thirdweb-dev/react";
+import { ethers } from 'ethers'
 
 import Button from './components/Button'
 import Input from './components/Input';
@@ -22,7 +23,7 @@ const HeirTile = ({ heir }: { heir: Heir }) => {
     <div className='py-4 border-b border-gray-200 last:border-0 flex justify-between'>
       <p className=''>{heir.userAddress}</p>
       <div className='flex items-center space-x-2'>
-        <p className=''>{heir.percentage}%</p>
+        <p className=''>{heir.percentage.toString()}%</p>
         <div className='w-[40px] h-[8px] rounded-md bg-gray-100 overflow-hidden'>
           <div className='bg-primary' style={{ width: `${heir.percentage}%` }}>&nbsp;</div>
         </div>
@@ -31,8 +32,9 @@ const HeirTile = ({ heir }: { heir: Heir }) => {
   )
 }
 
-const HeirsForm = ({ heirs, onCancel }: { heirs: Heir[], onCancel: () => void }) => {
-  const { control, register } = useForm({
+const HeirsForm = ({ heirs, onCancel, handleHeirsModification }: { heirs: Heir[], onCancel: () => void, handleHeirsModification: (heirs: Heir[]) => void }) => {
+  const [isSavingHeirs, setIsSavingHeirs] = useState(false)
+  const { control, register, handleSubmit } = useForm({
     defaultValues: {
       heirs: heirs.length > 0 ? heirs : [{ userAddress: '', percentage: 0 }]
     }
@@ -42,8 +44,23 @@ const HeirsForm = ({ heirs, onCancel }: { heirs: Heir[], onCancel: () => void })
     name: "heirs", // unique name for your Field Array
   });
 
+  const onSubmit = async ({ heirs }: { heirs: Heir[] }) => {
+    setIsSavingHeirs(true)
+
+    try {
+      await handleHeirsModification(heirs.map(({ userAddress, percentage }) => ({ userAddress, percentage: Number(percentage) })))
+    } catch (error) {
+      alert(error)
+      setIsSavingHeirs(false)
+    }
+  }
+
+  const onError = (errors: any) => {
+    alert(errors)
+  }
+
   return (
-    <div className='w-[500px]'>
+    <form onSubmit={handleSubmit(onSubmit, onError)} className='w-[500px]'>
       <div>
         {fields.map((field, index) => (
           <div className='py-4 border-b border-gray-200 last:border-0 flex space-x-2 flex items-center' key={field.id}>
@@ -54,7 +71,7 @@ const HeirsForm = ({ heirs, onCancel }: { heirs: Heir[], onCancel: () => void })
             />
             <Input
               className="w-[70px]"
-              maxLength="3"
+              maxLength="5"
               placeholder="Percentage"
               {...register(`heirs.${index}.percentage`)}
             />
@@ -64,37 +81,37 @@ const HeirsForm = ({ heirs, onCancel }: { heirs: Heir[], onCancel: () => void })
           </div>
         ))}
       </div>
-      <Button onClick={() => append({ userAddress: '', percentage: 0 })} className='w-full' variant='secondary' size='small'>
+      <Button onClick={() => append({ userAddress: '', percentage: 0 })} type="button" className='w-full' variant='secondary' size='small'>
         Add heir
       </Button>
       <hr className="my-5 border-t border-gray-200" />
       <div className='space-y-2'>
-        <Button onClick={() => append({ userAddress: '', percentage: 0 })} className='w-full' variant='primary'>
-          Save heirs
-        </Button>
-        <Button onClick={onCancel} className='w-full' variant='secondary'>
+        {isSavingHeirs ? (
+          <Button className='w-full' variant='primary' disabled>
+            Saving heirs...
+          </Button>
+        ) : (
+          <Button onClick={() => null} className='w-full' variant='primary'>
+            Save heirs
+          </Button>
+        )}
+        <Button onClick={onCancel} type="button" className='w-full' variant='secondary' disabled={isSavingHeirs}>
           Cancel
         </Button>
       </div >
-
-    </div >
+    </form >
   );
 }
 
 export default function Home() {
-  const [heirs, setHeirs] = useState<Heir[]>([{
-    userAddress: '0x27b3f8B6Efc8927CD55aeca47CbfE416802aBE04',
-    percentage: 30
-  }, {
-    userAddress: '0x27b3f8B6Efc8927CD55aeca47CbfE416802aBE03',
-    percentage: 70
-  }])
-  const [isLoadingHeirs, setIsLoadingHeirs] = useState(false)
+  const [heirs, setHeirs] = useState<Heir[]>([])
+  const [isLoadingHeirs, setIsLoadingHeirs] = useState(true)
   const [isModifyingHeirs, setIsModifyingHeirs] = useState(false)
   const [userPosterityWallet, setUserPosterityWallet] = useState<string | null>(null)
   const address = useAddress();
   const sdk = useSDK()
   const posterityWalletFactoryContract = sdk?.getContract(CONSTANTS.POSTERITY_WALLET_FACTORY_CONTRACT, PosterityWalletFactoryABI.abi)
+  let posterityWalletContract = useRef<any>()
 
   const getHeirs = async () => {
     (await posterityWalletFactoryContract)?.call("getPosterityWallet", [address])
@@ -103,15 +120,14 @@ export default function Home() {
           setUserPosterityWallet(null)
           setIsLoadingHeirs(false)
         } else {
-          setUserPosterityWallet(posterityWalletAddress)
           console.log({ posterityWalletAddress })
+          setUserPosterityWallet(posterityWalletAddress)
 
-          const posterityWalletContract = await sdk?.getContract(posterityWalletAddress, PosterityWalletABI.abi)
+          posterityWalletContract.current = await sdk?.getContract(posterityWalletAddress, PosterityWalletABI.abi)
 
-          const heirs = await posterityWalletContract?.call("getHeirs")
-
-          console.log({ heirs })
-          setHeirs(heirs)
+          const heirs = await posterityWalletContract.current?.call("getHeirs")
+          console.log(heirs)
+          setHeirs([...heirs])
         }
       }).catch(e => {
         alert(e)
@@ -129,9 +145,16 @@ export default function Home() {
     }
   }, [address])
 
+  const handleHeirsModification = async (heirs: Heir[]) => {
+    const fHeirs = heirs.map(({ userAddress, percentage }) => [userAddress, percentage])
+    await posterityWalletContract.current?.call("changeHeirs", [fHeirs])
+    setHeirs(heirs)
+    setIsModifyingHeirs(false)
+  }
+
   const getContent = () => {
     if (isModifyingHeirs) {
-      return <HeirsForm heirs={heirs} onCancel={() => setIsModifyingHeirs(false)} />
+      return <HeirsForm heirs={heirs} onCancel={() => setIsModifyingHeirs(false)} handleHeirsModification={handleHeirsModification} />
     } else if (!userPosterityWallet) {
       return (
         <p className='text-base'>
