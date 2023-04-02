@@ -1,14 +1,14 @@
 import Head from 'next/head'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react';
-import { useSDK } from "@thirdweb-dev/react";
-import { useAddress } from "@thirdweb-dev/react";
+import { useSDK, useAddress } from "@thirdweb-dev/react";
 import { useForm } from 'react-hook-form';
 
 import Button from './components/Button'
 import PosterityWalletFactoryABI from "../abis/PosterityWalletFactory.json"
 import Spinner from './components/Spinner';
 import Input from './components/Input';
+import { CONSTANTS } from './utils/constants';
 
 interface Transaction {
   to: string;
@@ -70,7 +70,7 @@ const PosterityWalletForm = ({ onCancel, handlePosterityWalletCreation }: { onCa
               Create
             </Button>
           )}
-          <Button onClick={onCancel} className='w-full' variant='secondary'>
+          <Button onClick={onCancel} className='w-full' variant='secondary' disabled={isCreatingPosterityWallet}>
             Cancel
           </Button>
         </div >
@@ -89,7 +89,8 @@ export default function PosterityWallet() {
   const address = useAddress();
   const etherscanProvider = new ethers.providers.EtherscanProvider();
   const sdk = useSDK()
-  const posterityWalletFactoryContract = sdk?.getContract("0x496c1218B018c7be47D6C219b060514C9a28CE39", PosterityWalletFactoryABI.abi)
+  const posterityWalletFactoryContract = sdk?.getContract(CONSTANTS.POSTERITY_WALLET_FACTORY_CONTRACT, PosterityWalletFactoryABI.abi)
+
   const getPosterityWalletTransaction = async (posterityWalletAddress: string) => {
     setIsLoadingTransactions(true)
 
@@ -101,7 +102,6 @@ export default function PosterityWallet() {
   const getPosterityWallet = async () => {
     (await posterityWalletFactoryContract)?.call("getPosterityWallet", [address])
       .then(function (posterityWalletAddress: any) {
-        console.log({ posterityWalletAddress })
         if (posterityWalletAddress === '0x0000000000000000000000000000000000000000') {
           setUserPosterityWallet(null)
           setIsLoadingPosterityWallet(false)
@@ -131,7 +131,7 @@ export default function PosterityWallet() {
   const handlePosterityWalletCreation = async (taxId: string) => {
     try {
       const response = await (await posterityWalletFactoryContract)?.call("deploy", [Number(taxId)])
-      const newPosterityWalletAddress = ethers.utils.hexStripZeros(response.receipt.logs[0].topics[2])
+      const newPosterityWalletAddress = ethers.utils.getAddress(ethers.utils.hexStripZeros(response.receipt.logs[0].topics[2]))
       setIsCreatingPosterityWallet(false)
       setIsLoadingPosterityWallet(true)
       setUserPosterityWallet(newPosterityWalletAddress)

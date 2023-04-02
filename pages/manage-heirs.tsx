@@ -1,10 +1,16 @@
 import Head from 'next/head'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form';
+import { useSDK, useAddress } from "@thirdweb-dev/react";
 
 import Button from './components/Button'
 import Input from './components/Input';
 import SvgButton from './components/SvgButton';
+import { CONSTANTS } from './utils/constants';
+import PosterityWalletFactoryABI from "../abis/PosterityWalletFactory.json"
+import PosterityWalletABI from "../abis/PosterityWallet.json"
+import Spinner from './components/Spinner';
+import Link from 'next/link';
 
 interface Heir {
   userAddress: string;
@@ -83,23 +89,72 @@ export default function Home() {
     userAddress: '0x27b3f8B6Efc8927CD55aeca47CbfE416802aBE03',
     percentage: 70
   }])
+  const [isLoadingHeirs, setIsLoadingHeirs] = useState(false)
   const [isModifyingHeirs, setIsModifyingHeirs] = useState(false)
+  const [userPosterityWallet, setUserPosterityWallet] = useState<string | null>(null)
+  const address = useAddress();
+  const sdk = useSDK()
+  const posterityWalletFactoryContract = sdk?.getContract(CONSTANTS.POSTERITY_WALLET_FACTORY_CONTRACT, PosterityWalletFactoryABI.abi)
+
+  const getHeirs = async () => {
+    (await posterityWalletFactoryContract)?.call("getPosterityWallet", [address])
+      .then(async function (posterityWalletAddress: any) {
+        if (posterityWalletAddress === '0x0000000000000000000000000000000000000000') {
+          setUserPosterityWallet(null)
+          setIsLoadingHeirs(false)
+        } else {
+          setUserPosterityWallet(posterityWalletAddress)
+          console.log({ posterityWalletAddress })
+
+          const posterityWalletContract = await sdk?.getContract(posterityWalletAddress, PosterityWalletABI.abi)
+
+          const heirs = await posterityWalletContract?.call("getHeirs")
+
+          console.log({ heirs })
+          setHeirs(heirs)
+        }
+      }).catch(e => {
+        alert(e)
+      })
+      .finally(function () {
+        setIsLoadingHeirs(false)
+      })
+  }
+
+  useEffect(() => {
+    setIsLoadingHeirs(true)
+
+    if (address) {
+      getHeirs()
+    }
+  }, [address])
 
   const getContent = () => {
-    if (heirs.length > 0) {
-      if (isModifyingHeirs) {
-        return <HeirsForm heirs={heirs} onCancel={() => setIsModifyingHeirs(false)} />
-      } else {
-        return (
-          <div className='w-[500px]'>
-            {heirs.sort((a, b) => b.percentage - a.percentage).map((heir) => <HeirTile key={heir.userAddress} heir={heir} />)}
-          </div>
-        )
-      }
-
+    if (isModifyingHeirs) {
+      return <HeirsForm heirs={heirs} onCancel={() => setIsModifyingHeirs(false)} />
+    } else if (!userPosterityWallet) {
+      return (
+        <p className='text-base'>
+          You still don't have a Posterity Wallet. Go to <Link href="/posterity-wallet" className='text-primary'>Posterity Wallet</Link> and click on the "Create" button to create one.
+        </p>
+      )
+    } else if (heirs.length > 0) {
+      return (
+        <div className='w-[500px]'>
+          {heirs.sort((a, b) => b.percentage - a.percentage).map((heir) => <HeirTile key={heir.userAddress} heir={heir} />)}
+        </div>
+      )
     } else {
-      return null
+      return (
+        <p className='text-base'>
+          There aren't heirs to show. Click on the "Modify heirs" button above to add heirs.
+        </p>
+      )
     }
+  }
+
+  if (isLoadingHeirs) {
+    return <Spinner />
   }
 
   return (
@@ -113,8 +168,8 @@ export default function Home() {
       <main className='px-48 py-12'>
         <div className='flex items-center space-x-5'>
           <h1 className='text-3xl font-bold'>Manage heirs</h1>
-          {isModifyingHeirs ? null :
-            <Button size='small' onClick={() => setIsModifyingHeirs(true)}>Update heirs</Button>}
+          {isModifyingHeirs || !userPosterityWallet ? null :
+            <Button size='small' onClick={() => setIsModifyingHeirs(true)}>Modify heirs</Button>}
         </div>
         <div className='my-5 flex items-center'>
           {getContent()}
