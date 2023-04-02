@@ -59,7 +59,7 @@ const SendForm = ({ userBalance, onCancel, handlePosterityWalletSend }: { userBa
   }
 
   const onError = (errors: any) => {
-    alert(errors)
+    alert('Error validating the form. Ensure that you provided a valid address and amount.')
   }
 
   return (
@@ -69,13 +69,28 @@ const SendForm = ({ userBalance, onCancel, handlePosterityWalletSend }: { userBa
           <Input
             className="w-full"
             placeholder="Address"
-            {...register('address')}
+            {...register('address',  {
+              required: true,
+              validate: {
+                address: (address: string) => {
+                  return ethers.utils.isAddress(address)
+                }
+              }
+            })}
           />
           <div className='flex items-center space-x-3'>
             <Input
               className="w-full"
               placeholder="Amount"
-              {...register('amount')}
+              {...register('amount', {
+                required: true,
+                min: 0,
+                validate: {
+                  number: (amount) => {
+                    return isNaN(amount) === false
+                  }
+                }
+              })}
             />
             <p className="text-sm whitespace-nowrap	">
               Max: {userBalance ? ethers.utils.formatEther(userBalance) : '0.0'} ETH
@@ -134,7 +149,7 @@ const PosterityWalletForm = ({ onCancel, handlePosterityWalletCreation }: { onCa
   }
 
   const onError = (errors: any) => {
-    alert(errors)
+    alert('Error validating the form. Ensure that you informed a Tax ID.')
   }
 
   return (
@@ -143,7 +158,9 @@ const PosterityWalletForm = ({ onCancel, handlePosterityWalletCreation }: { onCa
         <Input
           className="w-full"
           placeholder="Your tax ID"
-          {...register('taxId')}
+          {...register('taxId', {
+            required: true,
+          })}
         />
         <hr className="my-5 border-t border-gray-200" />
         <div className='space-y-2'>
