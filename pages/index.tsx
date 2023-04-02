@@ -1,5 +1,4 @@
 import Head from 'next/head'
-import Image from 'next/image'
 
 export default function Home() {
   return (
@@ -14,8 +13,8 @@ export default function Home() {
         <div className='px-48 py-12 flex items-center bg-[url("../public/hero.svg")] bg-no-repeat bg-right-bottom min-h-screen'>
           <h1 className='text-6xl font-bold w-1/2'>A thoughtful way to show love to those who matter to you.</h1>
         </div>
-        <div className='px-48 py-28 flex items-center flex-col text-center'>
-          <div className='space-y-12 text-2xl w-3/4'>
+        <div className='px-48 py-20 my-20 flex items-center flex-col text-center bg-gray-100'>
+          <div className='space-y-10 text-2xl w-3/4'>
             <p className=''>The Cryptoeconomy came to solve a wide range of problems, from asset ownership to transparency and privacy.</p>
             <p className=''>To date, we have achieved important milestones.</p>
             <p className=''>Currently, we can transfer value via tokens to anyone, anywhere.</p>

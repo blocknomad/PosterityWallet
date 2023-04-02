@@ -11,7 +11,7 @@ import Spinner from './components/Spinner';
 interface Successor {
   walletAddress: string;
   taxId: string;
-  recovered: boolean;
+  succeeded: boolean;
 }
 
 const SuccessorTile = ({ successor }: { successor: Successor }) => {
@@ -25,6 +25,8 @@ const SuccessorTile = ({ successor }: { successor: Successor }) => {
       const posterityWalletContract = await sdk?.getContract(successor.walletAddress, PosterityWalletABI.abi)
 
       await posterityWalletContract?.call("establishSucessorDeath")
+
+      successor.succeeded = true;
     } catch (e) {
       alert(e)
     } finally {
@@ -38,14 +40,12 @@ const SuccessorTile = ({ successor }: { successor: Successor }) => {
         <p className=''>{successor.walletAddress}</p>
         <p className='text-sm text-gray-500'>{successor.taxId}</p>
       </div>
-      {successor.recovered ? (
-        <Button size="small" success={successor.recovered}>Wallet succeeded</Button>
+      {successor.succeeded ? (
+        <Button size="small" success={successor.succeeded}>Wallet succeeded</Button>
       ) : (
         isSucceedingWallet ? (
-          <Button size="small" disabled>Succeeding wallet...</Button>
-
+          <Button size="small" disabled>Starting succession...</Button>
         ) : (
-
           <Button size="small" onClick={handleSuccession}>Start succession</Button>
         )
       )}
@@ -53,37 +53,24 @@ const SuccessorTile = ({ successor }: { successor: Successor }) => {
   )
 }
 
-/*
-{
-  userAddress: '0x27b3f8B6Efc8927CD55aeca47CbfE416802aBE04',
-  taxId: '345.089.353-03',
-  recovered: true,
-}, {
-  userAddress: '0x27b3f8B6Efc8927CD55aeca47CbfE416802aBE03',
-  taxId: '983.875.398-34',
-  recovered: false,
-}*/
-
 export default function RecoverWallet() {
   const [isLoadingSuccessorWallets, setIsLoadingSuccessorWallets] = useState(true)
   const [successorsWallets, setSuccessorsWallets] = useState<Successor[]>([])
   const address = useAddress();
   const sdk = useSDK()
   const posterityWalletFactoryContract = sdk?.getContract(CONSTANTS.POSTERITY_WALLET_FACTORY_CONTRACT, PosterityWalletFactoryABI.abi)
-  let posterityWalletContract = useRef<any>()
 
   const getSuccessorWallets = async () => {
     (await posterityWalletFactoryContract)?.call("getPosterityWalletsFromHeir", [address])
       .then(async function (wallets: any) {
-        console.log({ wallets })
-        setSuccessorsWallets(wallets.map((wallet: string) => ({ walletAddress: wallet })))
-        /*setSuccessorsWallets(posterityWalletAddress)
+        const auxWallets = await Promise.all(wallets.map(async (wallet: string) => {
+          const posterityWalletContract = await sdk?.getContract(wallet, PosterityWalletABI.abi)
+          const succeeded = await posterityWalletContract?.call("succession")
 
-        posterityWalletContract.current = await sdk?.getContract(posterityWalletAddress, PosterityWalletABI.abi)
+          return { walletAddress: wallet, succeeded }
+        }))
 
-        const heirs = await posterityWalletContract.current?.call("getHeirs")
-        console.log(heirs)
-        setHeirs([...heirs])*/
+        setSuccessorsWallets(auxWallets)
       }).catch(e => {
         alert(e)
       })
