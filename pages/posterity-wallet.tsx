@@ -174,7 +174,7 @@ export default function PosterityWallet() {
   const [isCreatingPosterityWallet, setIsCreatingPosterityWallet] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const address = useAddress();
-  const etherscanProvider = new ethers.providers.EtherscanProvider();
+  const etherscanProvider = new ethers.providers.EtherscanProvider("goerli", process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY);
   const sdk = useSDK()
   const posterityWalletFactoryContract = sdk?.getContract(CONSTANTS.POSTERITY_WALLET_FACTORY_CONTRACT, PosterityWalletFactoryABI.abi)
 
