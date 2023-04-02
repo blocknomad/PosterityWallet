@@ -60,7 +60,7 @@ const HeirsForm = ({ heirs, onCancel, handleHeirsModification }: { heirs: Heir[]
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, onError)} className='w-[500px]'>
+    <form onSubmit={handleSubmit(onSubmit, onError)} className='w-[600px]'>
       <div>
         {fields.map((field, index) => (
           <div className='py-4 border-b border-gray-200 last:border-0 flex space-x-2 flex items-center' key={field.id}>
@@ -163,7 +163,7 @@ export default function Home() {
       )
     } else if (heirs.length > 0) {
       return (
-        <div className='w-[500px]'>
+        <div className='w-[600px]'>
           {heirs.sort((a, b) => b.percentage - a.percentage).map((heir) => <HeirTile key={heir.userAddress} heir={heir} />)}
         </div>
       )

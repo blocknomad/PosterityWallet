@@ -58,7 +58,7 @@ const PosterityWalletForm = ({ onCancel, handlePosterityWalletCreation }: { onCa
   }
 
   return (
-    <div className='w-[500px]'>
+    <div className='w-[600px]'>
       <form onSubmit={handleSubmit(onSubmit, onError)} className='border-b border-gray-200 last:border-0'>
         <Input
           className="w-full"
