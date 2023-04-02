@@ -110,7 +110,7 @@ export default function RecoverWallet() {
     } else {
       return (
         <p className='text-base'>
-          You still haven't been added as a heir in a Posterity Wallet.
+          You still haven't been added as an heir in a Posterity Wallet.
         </p>
       )
     }

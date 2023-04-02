@@ -1,11 +1,12 @@
 import Head from 'next/head'
 import { ethers } from 'ethers'
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSDK, useAddress } from "@thirdweb-dev/react";
 import { useForm } from 'react-hook-form';
 
 import Button from './components/Button'
 import PosterityWalletFactoryABI from "../abis/PosterityWalletFactory.json"
+import PosterityWalletABI from "../abis/PosterityWallet.json"
 import Spinner from './components/Spinner';
 import Input from './components/Input';
 import { CONSTANTS } from './utils/constants';
@@ -25,6 +26,85 @@ const TransactionTile = ({ transaction }: { transaction: Transaction }) => {
       <p className='truncate w-1/3 pr-7'>{ethers.utils.formatEther(transaction.value)} ETH</p>
     </div>
   )
+}
+
+const SendForm = ({ userBalance, onCancel, handlePosterityWalletSend }: { userBalance: any; onCancel: () => void; handlePosterityWalletSend: any }) => {
+  const [isSending, setIsSending] = useState(false)
+  const [txHash, setTxHash] = useState(null)
+  const { handleSubmit, register } = useForm({
+    defaultValues: {
+      address: '',
+      amount: ''
+    }
+  });
+
+  const onSubmit = async ({ address, amount }: { address: string; amount: string }) => {
+    setIsSending(true)
+    setTxHash(null)
+
+    if (isNaN(Number(amount))) {
+      alert('Please inform a number as your amount')
+      setIsSending(false)
+      return
+    }
+
+    try {
+      const hash = await handlePosterityWalletSend({ address, amount })
+      setTxHash(hash)
+    } catch (error) {
+      alert(error)
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const onError = (errors: any) => {
+    alert(errors)
+  }
+
+  return (
+    <div className='w-[600px]'>
+      <form onSubmit={handleSubmit(onSubmit, onError)} className='border-b border-gray-200 last:border-0'>
+        <div className='space-y-3 pt-8'>
+          <Input
+            className="w-full"
+            placeholder="Address"
+            {...register('address')}
+          />
+          <div className='flex items-center space-x-3'>
+            <Input
+              className="w-full"
+              placeholder="Amount"
+              {...register('amount')}
+            />
+            <p className="text-sm whitespace-nowrap	">
+              Max: {userBalance ? ethers.utils.formatEther(userBalance) : '0.0'} ETH
+            </p>
+          </div>
+        </div>
+        <hr className="my-5 border-t border-gray-200" />
+        <div className='space-y-2'>
+          {isSending ? (
+            <Button className='w-full' variant='primary' disabled>
+              Sending...
+            </Button>
+          ) : (
+            <Button className='w-full' variant='primary'>
+              Send
+            </Button>
+          )}
+          <Button onClick={onCancel} className='w-full' variant='secondary' disabled={isSending}>
+            Cancel
+          </Button>
+        </div >
+      </form >
+      {isSending === false && txHash ? (
+        <div className='pt-10 flex items-center'>
+          <p className='text-base'>Tx Hash: </p>&nbsp;<a href={`https://goerli.etherscan.io/tx/${txHash}`} target='_blank' className='text-primary max-w-[300px] truncate'>{txHash}</a>
+        </div>
+      ) : null}
+    </div >
+  );
 }
 
 
@@ -92,6 +172,7 @@ export default function PosterityWallet() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false)
   const [isCreatingPosterityWallet, setIsCreatingPosterityWallet] = useState(false)
+  const [isSending, setIsSending] = useState(false)
   const address = useAddress();
   const etherscanProvider = new ethers.providers.EtherscanProvider();
   const sdk = useSDK()
@@ -105,20 +186,25 @@ export default function PosterityWallet() {
       setIsLoadingTransactions(false)
     });
   }
+
+  const getPosterityWalletBalance = async (posterityWalletAddress?: string) => {
+    if (!posterityWalletAddress) return
+
+    const balance = await sdk?.getProvider().getBalance(posterityWalletAddress)
+    setUserPosterityWalletBalance(balance)
+  }
+
   const getPosterityWallet = async () => {
     (await posterityWalletFactoryContract)?.call("getPosterityWallet", [address])
-      .then(function (posterityWalletAddress: any) {
+      .then(async function (posterityWalletAddress: any) {
         if (posterityWalletAddress === '0x0000000000000000000000000000000000000000') {
           setUserPosterityWallet(null)
           setIsLoadingPosterityWallet(false)
         } else {
           setUserPosterityWallet(posterityWalletAddress)
           getPosterityWalletTransaction(posterityWalletAddress)
-          sdk?.getProvider().getBalance(posterityWalletAddress).then(balance => {
-            setUserPosterityWalletBalance(balance)
-          }).finally(() => {
-            setIsLoadingPosterityWallet(false)
-          })
+          await getPosterityWalletBalance(posterityWalletAddress)
+          setIsLoadingPosterityWallet(false)
         }
       })
       .finally(function () {
@@ -140,6 +226,13 @@ export default function PosterityWallet() {
     setIsCreatingPosterityWallet(false)
     setUserPosterityWallet(newPosterityWalletAddress)
     setUserPosterityWalletBalance(null)
+  }
+
+  const handlePosterityWalletSend = async ({ address, amount }: { address: string; amount: string }) => {
+    const posterityWalletContract = await sdk?.getContract(userPosterityWallet, PosterityWalletABI.abi)
+    const { receipt } = await (await posterityWalletContract)?.call("withdraw", [ethers.utils.parseEther(amount), address])
+    getPosterityWalletBalance(userPosterityWallet)
+    return receipt.transactionHash
   }
 
   const getPosterityWalletContent = () => {
@@ -198,16 +291,20 @@ export default function PosterityWallet() {
               <h1 className='text-3xl font-bold'>Posterity Wallet</h1>
               <div className='bg-gray-100 truncate rounded-md py-1 px-3 max-w-[140px] text-sm'>{userPosterityWallet}</div>
             </div>
-            <div className='my-5 flex items-center'>
-              <p className='text-5xl font-thin'>{userPosterityWalletBalance ? ethers.utils.formatEther(userPosterityWalletBalance) : '0.0'} <span className='text-3xl'>ETH</span></p>
-              {/*<Button size='small' className='ml-10'>Deposit</Button>*/}
-              <Button size='small' className='ml-10'>Send</Button>
-            </div>
-            <hr className="my-8 border-t border-gray-200" />
-            <div className='w-[700px]'>
-              <h2 className='font-thin text-2xl mb-4'>Recent transactions</h2>
-              {getTransactionsContent()}
-            </div>
+            {isSending ? <SendForm userBalance={userPosterityWalletBalance} onCancel={() => setIsSending(false)} handlePosterityWalletSend={handlePosterityWalletSend} /> : (
+              <>
+                <div className='my-5 flex items-center'>
+                  <p className='text-5xl font-thin'>{userPosterityWalletBalance ? ethers.utils.formatEther(userPosterityWalletBalance) : '0.0'} <span className='text-3xl'>ETH</span></p>
+                  {/*<Button size='small' className='ml-10'>Deposit</Button>*/}
+                  <Button size='small' className='ml-10' onClick={() => setIsSending(true)}>Send</Button>
+                </div>
+                <hr className="my-8 border-t border-gray-200" />
+                <div className='w-[700px]'>
+                  <h2 className='font-thin text-2xl mb-4'>Recent transactions</h2>
+                  {getTransactionsContent()}
+                </div>
+              </>
+            )}
           </>
         ) : (
           <>
