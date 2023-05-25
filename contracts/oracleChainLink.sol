@@ -11,6 +11,7 @@ contract FetchFromArray is ChainlinkClient, ConfirmedOwner {
     string public id;
     bytes public data;
     string public verify;
+    string public situacao;
     bytes32 private jobId;
     uint256 private fee;
 
@@ -19,27 +20,28 @@ contract FetchFromArray is ChainlinkClient, ConfirmedOwner {
     constructor() ConfirmedOwner(msg.sender) {
         setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
         setChainlinkOracle(0xCC79157eb46F5624204f47AB42b3906cAA40eaB7);
-        jobId = "7da2702f37fd48e5b1b9a5715e3509b6";
+        jobId = "ca98366cc7314957b8c012c72f05aeeb";
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
 
-    function request() public {
-        Chainlink.Request memory req = buildChainlinkRequest("7da2702f37fd48e5b1b9a5715e3509b6", address(this), this.fulfill.selector);
+    function request(string memory taxId) public {
+        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
         req.add(
             "get",
-            "https://ipfs.io/ipfs/QmPv7X19m1FzzFdMNtUiDvpBA9bZWfj3qGLd4NsJiCSkdo?filename=certidao.json"
+            "https://posterity-wallet.vercel.app/api/getCPF/"
         );
-        req.add("path", "certidao");
+        req.add("taxId", taxId);
+        req.add("path", "situacao");
         sendChainlinkRequest(req, (1 * LINK_DIVISIBILITY) / 10); // 0,1*10**18 LINK
     }
 
-    function fulfill(bytes32 requestId, bytes memory bytesData) public recordChainlinkFulfillment(requestId) {
-        data = bytesData;
-        verify = string(data);
+    function fulfill(bytes32 requestId, string memory _situacao) public recordChainlinkFulfillment(requestId) {
+        situacao = _situacao;
     }
 
-    function getVerify() external view returns (string memory) {
-        return verify;
+    function getVerify(string memory taxId) external returns (string memory) {
+        request(taxId);
+        return situacao;
     }
     
 }

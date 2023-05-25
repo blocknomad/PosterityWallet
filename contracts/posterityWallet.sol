@@ -18,7 +18,7 @@ contract PosterityWallet {
         _;
     }
 
-    FetchFromArray oracle = FetchFromArray(0x36423F0c513673764a11E6977D34E3EeA071c898);
+    FetchFromArray oracle = FetchFromArray(0x7A7Ebb02a1828Face2620Fa0f34763ea6d5c3aC3);
     PosterityWalletFactory posterityWalletFactory;
 
     bool public succession = false;
@@ -91,17 +91,17 @@ contract PosterityWallet {
         }
     }
 
-    function establishSucessorDeath() public {
+    function establishSucessorDeath(string memory taxId) public {
         require(succession == false,  "This succession has already started");
         require(_heirsMap[msg.sender] == true, "You are not a valid heir");
 
-        authorizedHeir = oracle.getVerify();
+        authorizedHeir = oracle.getVerify(taxId);
 
         authorizedHeirResult = keccak256(bytes(authorizedHeir));
 
-        authorizedHeirFrase = keccak256(bytes("false"));
+        authorizedHeirFrase = keccak256(bytes("Cancelada"));
 
-        require(authorizedHeirResult == authorizedHeirFrase, "Unable to start protocol");
+        require(authorizedHeirResult != authorizedHeirFrase, "Unable to start protocol");
         succession = true;
         withdrawTotal();
     }
