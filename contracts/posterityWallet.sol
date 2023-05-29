@@ -18,7 +18,9 @@ contract PosterityWallet {
         _;
     }
 
-    FetchFromArray oracle = FetchFromArray(0x7A7Ebb02a1828Face2620Fa0f34763ea6d5c3aC3);
+    event ResponseSituation(string indexed situation);
+
+    APIConsumer oracle = APIConsumer(0x0d560062c1C668e73B92B426Df7B9ffec774d474);
     PosterityWalletFactory posterityWalletFactory;
 
     bool public succession = false;
@@ -29,7 +31,7 @@ contract PosterityWallet {
 
     address public owner;
 
-    string public authorizedHeir;
+    bytes32 public requestID;
 
     bytes32 public authorizedHeirResult;
 
@@ -48,6 +50,7 @@ contract PosterityWallet {
         owner = _owner;
         posterityWalletFactory = PosterityWalletFactory(msg.sender);
     }
+    
 
     /// Functions
     receive() external payable {
@@ -58,8 +61,7 @@ contract PosterityWallet {
         return taxID;
     }
 
-    function getHeirs() public view  returns(Heir[] memory){
-
+    function getHeirs() public view returns(Heir[] memory){
         return _heirs;
     }
 
@@ -91,17 +93,23 @@ contract PosterityWallet {
         }
     }
 
-    function establishSucessorDeath(string memory taxId) public {
+    function requestOracle() public {
+        uint256 taxId = gettaxID();
+        requestID = oracle.requestSituationData(taxId);
+    }
+
+    function establishSucessorDeath(string memory authorizedHeir) public {
         require(succession == false,  "This succession has already started");
         require(_heirsMap[msg.sender] == true, "You are not a valid heir");
-
-        authorizedHeir = oracle.getVerify(taxId);
+        require(msg.sender == 0x0d560062c1C668e73B92B426Df7B9ffec774d474, "Only Oracle contract can call this function");
 
         authorizedHeirResult = keccak256(bytes(authorizedHeir));
 
         authorizedHeirFrase = keccak256(bytes("Cancelada"));
 
-        require(authorizedHeirResult != authorizedHeirFrase, "Unable to start protocol");
+        emit ResponseSituation(authorizedHeir);
+
+        require(authorizedHeirResult == authorizedHeirFrase, "Unable to start protocol");
         succession = true;
         withdrawTotal();
     }

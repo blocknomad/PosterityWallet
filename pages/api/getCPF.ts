@@ -1,13 +1,9 @@
-import { useSDK } from "@thirdweb-dev/react";
 import type { NextApiRequest, NextApiResponse } from "next";
-import PosterityWalletABI from "../../abis/PosterityWallet.json";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'GET'){
 
-    const cpf = req.body
-
-    console.log(cpf)
+    const { cpf } = req.query; 
 
     const url = 'https://cadastral-situation-of-the-brazilian-cpf-numbers.p.rapidapi.com/';
     const options = {
@@ -25,9 +21,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       const response = await fetch(url, options);
       const result = await response.text();
-      console.log(result);
 
-      return res.status(200).json({ result });
+      return res.status(200).json(JSON.parse(result));
 
     } catch (error) {
       console.error(error)

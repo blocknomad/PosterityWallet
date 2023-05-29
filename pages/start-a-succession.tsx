@@ -24,12 +24,22 @@ const SuccessorTile = ({ successor }: { successor: Successor }) => {
 
       const posterityWalletContract = await sdk?.getContract(successor.walletAddress, PosterityWalletABI.abi)
     
-      await posterityWalletContract?.call("establishSucessorDeath",[`${successor.taxId}`])
+      await posterityWalletContract?.call("requestOracle")
       .then((myValue: any) =>{
-        const receipt = myValue
 
-        console.log(receipt)
-        //successor.succeeded = true;
+        const unsubscribe = posterityWalletContract.events.addEventListener(
+          "ResponseSituation",
+          (event: any) => {
+            console.log(event);
+
+            if(event == "Cancelada"){
+              successor.succeeded = true;
+            }
+          },
+        );
+
+        unsubscribe();
+
       }).catch((error) =>{
         console.log(error)
       })
