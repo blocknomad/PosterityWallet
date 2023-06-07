@@ -1,8 +1,8 @@
-import Image from 'next/image'
-import Link from 'next/link'
+import Image from "next/image";
+import Link from "next/link";
 import { ConnectWallet, useSwitchChain } from "@thirdweb-dev/react";
 import { useAddress, useNetworkMismatch, ChainId } from "@thirdweb-dev/react";
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 export default function Header() {
   const address = useAddress(); // Get connected wallet address
@@ -22,15 +22,13 @@ export default function Header() {
       <Link href="/">
         <Image src="/logo.png" alt="Posterity logo" width="150" height="64" />
       </Link>
-      <div className='grow' />
-      {useAddress() ? (
-        <div className='items-center space-x-5'>
-          <Link href="/posterity-wallet">Posterity Wallet</Link>
-          <Link href="/manage-heirs">Manage heirs</Link>
-          <Link href="/start-a-succession">Start a succession</Link>
-        </div>
-      ) : null}
+      <div className="grow" />
+      <div className="items-center space-x-5">
+        <Link href="/posterity-wallet">Posterity Wallet</Link>
+        <Link href="/manage-heirs">Manage heirs</Link>
+        <Link href="/start-a-succession">Start a succession</Link>
+      </div>
       <ConnectWallet />
     </header>
-  )
+  );
 }
