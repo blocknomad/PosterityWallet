@@ -20,12 +20,12 @@ contract PosterityWallet {
 
     event ResponseSituation(string indexed situation);
 
-    APIConsumer oracle = APIConsumer(0x0d560062c1C668e73B92B426Df7B9ffec774d474);
+    APIConsumer oracle = APIConsumer(0x8160631Dea1b5BCe247Ad65B49fb02500BDaC3c0);
     PosterityWalletFactory posterityWalletFactory;
 
     bool public succession = false;
 
-    uint256 private taxID;
+    string private taxID;
 
     uint256 public totalDistribuition = 0;
 
@@ -45,7 +45,7 @@ contract PosterityWallet {
 
     mapping(address => bool) _heirsMap;
 
-    constructor(uint256 _taxID, address _owner) payable{
+    constructor(string memory _taxID, address _owner) payable{
         taxID = _taxID;
         owner = _owner;
         posterityWalletFactory = PosterityWalletFactory(msg.sender);
@@ -57,7 +57,7 @@ contract PosterityWallet {
         require(succession == false, "Posterity Succession has already been started");
     }
 
-    function gettaxID() public view returns (uint256) {
+    function gettaxID() public view returns (string memory) {
         return taxID;
     }
 
@@ -94,14 +94,13 @@ contract PosterityWallet {
     }
 
     function requestOracle() public {
-        uint256 taxId = gettaxID();
+        string memory taxId = gettaxID();
         requestID = oracle.requestSituationData(taxId);
     }
 
-    function establishSucessorDeath(string memory authorizedHeir) public {
+    function establishSucessorDeath(string memory authorizedHeir) external {
         require(succession == false,  "This succession has already started");
-        require(_heirsMap[msg.sender] == true, "You are not a valid heir");
-        require(msg.sender == 0x0d560062c1C668e73B92B426Df7B9ffec774d474, "Only Oracle contract can call this function");
+        require(msg.sender == 0x8160631Dea1b5BCe247Ad65B49fb02500BDaC3c0, "Only Oracle contract can call this function");
 
         authorizedHeirResult = keccak256(bytes(authorizedHeir));
 

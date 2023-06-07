@@ -15,7 +15,7 @@ contract PosterityWalletFactory {
 
     constructor() {}
 
-    function deploy(uint256 taxID) public {
+    function deploy(string memory taxID) public {
 
         PosterityWallet posterityWallet = new PosterityWallet(taxID, msg.sender);
         posterityWallets[msg.sender] = address(posterityWallet);

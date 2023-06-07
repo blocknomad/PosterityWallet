@@ -22,7 +22,7 @@ contract APIConsumer is ChainlinkClient, ConfirmedOwner {
         fee = (1 * LINK_DIVISIBILITY) / 10;
     }
 
-    function requestSituationData(uint256 taxId) public returns (bytes32 requestId) {
+    function requestSituationData(string memory taxId) public returns (bytes32 requestId) {
         callingContract = msg.sender;
         Chainlink.Request memory req = buildChainlinkRequest(
             jobId,
@@ -47,6 +47,5 @@ contract APIConsumer is ChainlinkClient, ConfirmedOwner {
         emit RequestSituation(_requestId, _situation);
         posterityWallet = PosterityWallet(payable(callingContract));
         posterityWallet.establishSucessorDeath(_situation);
-    }   
-
+    }
 }
