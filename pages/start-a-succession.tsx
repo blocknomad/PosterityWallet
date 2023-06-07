@@ -23,10 +23,27 @@ const SuccessorTile = ({ successor }: { successor: Successor }) => {
       setIsSucceedingWallet(true)
 
       const posterityWalletContract = await sdk?.getContract(successor.walletAddress, PosterityWalletABI.abi)
+    
+      await posterityWalletContract?.call("requestOracle")
+      .then((myValue: any) =>{
 
-      await posterityWalletContract?.call("establishSucessorDeath")
+        const unsubscribe = posterityWalletContract.events.addEventListener(
+          "ResponseSituation",
+          (event: any) => {
+            console.log(event);
 
-      successor.succeeded = true;
+            if(event == "Cancelada"){
+              successor.succeeded = true;
+            }
+          },
+        );
+
+        unsubscribe();
+
+      }).catch((error) =>{
+        console.log(error)
+      })
+
     } catch (e) {
       alert(e)
     } finally {
@@ -58,7 +75,7 @@ export default function RecoverWallet() {
   const [successorsWallets, setSuccessorsWallets] = useState<Successor[]>([])
   const address = useAddress();
   const sdk = useSDK()
-  const posterityWalletFactoryContract = sdk?.getContract(CONSTANTS.POSTERITY_WALLET_FACTORY_CONTRACT, PosterityWalletFactoryABI.abi)
+  const posterityWalletFactoryContract = sdk?.getContractFromAbi(`${CONSTANTS.POSTERITY_WALLET_FACTORY_CONTRACT}`, PosterityWalletFactoryABI.abi)
 
   const getSuccessorWallets = async () => {
     (await posterityWalletFactoryContract)?.call("getPosterityWalletsFromHeir", [address])

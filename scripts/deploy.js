@@ -5,8 +5,8 @@ async function main() {
 
   console.log(`Account balance:, ${(await deployer.getBalance()).toString()}`);
 
-  const Token = await ethers.getContractFactory("PosterityWallet");
-  const token = await Token.deploy("07766232901", "0xBed97CF7FD3Ab850f2d03B9e573fD61598311989");
+  const Token = await ethers.getContractFactory("FetchFromArray");
+  const token = await Token.deploy();
 
   console.log(`Contract address:, ${token.address}`);
 }
