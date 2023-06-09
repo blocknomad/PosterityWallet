@@ -20,7 +20,7 @@ contract PosterityWallet {
 
     event ResponseSituation(string indexed situation);
 
-    APIConsumer oracle = APIConsumer(0x8160631Dea1b5BCe247Ad65B49fb02500BDaC3c0);
+    APIConsumer oracle = APIConsumer(payable(0xE971F47eA676BAb72f727cc1466dbC3CD245B55a));
     PosterityWalletFactory posterityWalletFactory;
 
     bool public succession = false;
@@ -32,10 +32,6 @@ contract PosterityWallet {
     address public owner;
 
     bytes32 public requestID;
-
-    bytes32 public authorizedHeirResult;
-
-    bytes32 public authorizedHeirFrase;
 
     uint256 public balance;
 
@@ -98,17 +94,12 @@ contract PosterityWallet {
         requestID = oracle.requestSituationData(taxId);
     }
 
-    function establishSucessorDeath(string memory authorizedHeir) external {
+    function establishSucessorDeath() public {
         require(succession == false,  "This succession has already started");
-        require(msg.sender == 0x8160631Dea1b5BCe247Ad65B49fb02500BDaC3c0, "Only Oracle contract can call this function");
+        string memory result = oracle.results(requestID);
+        string memory authorizedHeirFrase = "Cancelada";
 
-        authorizedHeirResult = keccak256(bytes(authorizedHeir));
-
-        authorizedHeirFrase = keccak256(bytes("Cancelada"));
-
-        emit ResponseSituation(authorizedHeir);
-
-        require(authorizedHeirResult == authorizedHeirFrase, "Unable to start protocol");
+        require(keccak256(bytes(result)) == keccak256(bytes(authorizedHeirFrase)), "Unable to start protocol");
         succession = true;
         withdrawTotal();
     }
