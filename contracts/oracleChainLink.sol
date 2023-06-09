@@ -3,15 +3,13 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
-import "./posterityWallet.sol";
 
 contract APIConsumer is ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 
     bytes32 private jobId;
     uint256 private fee;
-    PosterityWallet posterityWallet;
-    address public callingContract;
+    mapping(bytes32 => string) public results;
 
     event RequestSituation(bytes32 indexed requestId, string situation);
 
@@ -23,7 +21,6 @@ contract APIConsumer is ChainlinkClient, ConfirmedOwner {
     }
 
     function requestSituationData(string memory taxId) public returns (bytes32 requestId) {
-        callingContract = msg.sender;
         Chainlink.Request memory req = buildChainlinkRequest(
             jobId,
             address(this),
@@ -45,7 +42,6 @@ contract APIConsumer is ChainlinkClient, ConfirmedOwner {
         string memory _situation
     ) public recordChainlinkFulfillment(_requestId) {
         emit RequestSituation(_requestId, _situation);
-        posterityWallet = PosterityWallet(payable(callingContract));
-        posterityWallet.establishSucessorDeath(_situation);
+        results[_requestId] = _situation;
     }
 }
